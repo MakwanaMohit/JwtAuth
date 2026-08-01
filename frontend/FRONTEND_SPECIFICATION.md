@@ -90,12 +90,12 @@ Design Aesthetic: Minimalist, clean, plain-type typography, neutral color palett
   - Send Request section (input target user ID or select user).
   - Pending Incoming Requests (`ASKED`) with **Accept**, **Reject**, and **Block** actions.
   - Pending Outgoing Requests (`sent`) with **Cancel** action.
-- `TotpSetupModal.jsx`: Modal displaying generated `otpauth://` URI / secret key for authenticator pairing, with 6-digit code verification to activate MFA (`/mfa/enable`).
+- `TotpSetupModal.jsx`: Modal displaying a scannable QR Code SVG (via `qrcode.react`) generated from the `otpauth://` URI, along with optional manual secret key toggle and 6-digit code verification to activate MFA (`/mfa/enable`).
 
 #### 3. Chat Interface (`src/components/Chat/`)
-- `Sidebar.jsx`: Switchable list view between **Conversations** and **All Users**.
-- `MessageThread.jsx`: Main chat window rendering messages ordered chronologically with sender badges and timestamps.
-- `MessageInput.jsx`: Controlled text input field with submit handler triggering `/messages/send`.
+- `Sidebar.jsx`: Switchable list view between **Conversations** and **All Users**. Includes a **Remove Friend** action button in the Friends list tab.
+- `MessageThread.jsx`: Main chat window rendering messages ordered chronologically with sender badges, timestamps, and a **Remove Friend** header button. Automatically disables input when `canSend == false`.
+- `MessageInput.jsx`: Controlled text input field with submit handler triggering `/messages/send`. Enabled only when `canSend == true`.
 
 ---
 

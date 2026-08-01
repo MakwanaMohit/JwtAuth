@@ -142,6 +142,21 @@ export default function App() {
     }
   };
 
+  const handleRemoveFriend = async (targetUserId) => {
+    if (!window.confirm('Are you sure you want to remove this friend? You will no longer be able to message each other.')) {
+      return;
+    }
+    try {
+      await friendService.removeFriend(targetUserId);
+      await loadAppData(user?.userId);
+      if (activeTarget && activeTarget.userId === targetUserId) {
+        setActiveTarget((prev) => (prev ? { ...prev, canSend: false } : null));
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to remove friend');
+    }
+  };
+
   if (initLoading) {
     return (
       <div className="init-screen">
@@ -171,6 +186,7 @@ export default function App() {
           onSelectConvo={handleSelectConvo}
           onSelectFriend={handleSelectFriend}
           onStartChat={handleSelectFriend}
+          onRemoveFriend={handleRemoveFriend}
         />
 
         <MessageThread
@@ -178,6 +194,7 @@ export default function App() {
           messages={messages}
           currentUserId={user?.userId}
           onSendMessage={handleSendMessage}
+          onRemoveFriend={handleRemoveFriend}
           loading={messagesLoading}
         />
       </div>

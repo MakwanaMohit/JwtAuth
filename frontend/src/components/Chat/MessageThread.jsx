@@ -1,12 +1,13 @@
 import React, { useEffect, useRef } from 'react';
 import MessageInput from './MessageInput';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, UserMinus } from 'lucide-react';
 
 export default function MessageThread({
   activeTarget, // { username, userId, conversationId, canSend }
   messages,
   currentUserId,
   onSendMessage,
+  onRemoveFriend,
   loading,
 }) {
   const bottomRef = useRef(null);
@@ -30,13 +31,26 @@ export default function MessageThread({
   return (
     <main className="chat-main">
       <div className="thread-header">
-        <div className="avatar avatar-sm">
-          {activeTarget.username.substring(0, 2).toUpperCase()}
+        <div className="thread-header-info" style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
+          <div className="avatar avatar-sm">
+            {activeTarget.username.substring(0, 2).toUpperCase()}
+          </div>
+          <div className="thread-user-info">
+            <h3>{activeTarget.username}</h3>
+            <span className="thread-sub">ID: {activeTarget.userId}</span>
+          </div>
         </div>
-        <div className="thread-user-info">
-          <h3>{activeTarget.username}</h3>
-          <span className="thread-sub">ID: {activeTarget.userId}</span>
-        </div>
+
+        {onRemoveFriend && (
+          <button
+            className="btn btn-outline btn-xs btn-danger-text"
+            style={{ color: 'var(--danger-color)', borderColor: '#fecaca' }}
+            onClick={() => onRemoveFriend(activeTarget.userId)}
+            title="Remove Friend"
+          >
+            <UserMinus size={14} /> Remove Friend
+          </button>
+        )}
       </div>
 
       <div className="thread-messages">

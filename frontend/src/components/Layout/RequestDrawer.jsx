@@ -1,22 +1,38 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { friendService } from '../../services/friendService';
-import { X, Check, UserX, Ban, UserPlus, Clock } from 'lucide-react';
+import { X, Check, UserX, Ban, UserPlus, Clock, Search } from 'lucide-react';
 
 export default function RequestDrawer({ isOpen, onClose, onRefreshFriends }) {
   const [pendingRequests, setPendingRequests] = useState([]);
   const [sentRequests, setSentRequests] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [actionMsg, setActionMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
     if (isOpen) {
       loadData();
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const loadData = async () => {
     setLoading(true);
@@ -48,10 +64,18 @@ export default function RequestDrawer({ isOpen, onClose, onRefreshFriends }) {
       await friendService.sendRequest(selectedUserId.trim());
       setActionMsg('Friend request sent!');
       setSelectedUserId('');
+      setSearchQuery('');
+      setIsDropdownOpen(false);
       loadData();
     } catch (err) {
       setErrorMsg(err.response?.data?.message || 'Failed to send friend request');
     }
+  };
+
+  const handleSelectUser = (user) => {
+    setSelectedUserId(user.userId);
+    setSearchQuery(user.username);
+    setIsDropdownOpen(false);
   };
 
   const handleAction = async (senderId, status) => {
@@ -81,6 +105,15 @@ export default function RequestDrawer({ isOpen, onClose, onRefreshFriends }) {
 
   if (!isOpen) return null;
 
+  // Filter users based on searchQuery
+  const filteredUsers = searchQuery.trim()
+    ? allUsers.filter(
+        (u) =>
+          u.username.toLowerCase().includes(searchQuery.trim().toLowerCase()) ||
+          u.userId.includes(searchQuery.trim())
+      )
+    : allUsers;
+
   return (
     <div className="drawer-overlay" onClick={onClose}>
       <div className="drawer-panel" onClick={(e) => e.stopPropagation()}>
@@ -95,33 +128,91 @@ export default function RequestDrawer({ isOpen, onClose, onRefreshFriends }) {
         {errorMsg && <div className="alert alert-error">{errorMsg}</div>}
 
         <div className="drawer-body">
-          {/* Send Request Form */}
+          {/* WhatsApp Style Searchable Combobox */}
           <div className="drawer-section">
             <h4><UserPlus size={16} /> Send Request</h4>
             <form onSubmit={handleSend} className="send-request-form">
-              <select
-                className="input-field"
-                value={selectedUserId}
-                onChange={(e) => setSelectedUserId(e.target.value)}
-              >
-                <option value="">Select User...</option>
-                {allUsers.map((u) => (
-                  <option key={u.userId} value={u.userId}>
-                    {u.username} ({u.userId})
-                  </option>
-                ))}
-              </select>
-              <div className="input-group-append">
-                <input
-                  type="text"
-                  className="input-field"
-                  placeholder="Or paste User ID..."
-                  value={selectedUserId}
-                  onChange={(e) => setSelectedUserId(e.target.value)}
-                />
-                <button type="submit" className="btn btn-primary btn-sm">
-                  Send
-                </button>
+              <div className="searchable-select-container" ref={dropdownRef} style={{ position: 'relative' }}>
+                <div className="input-group-append">
+                  <div style={{ position: 'relative', flex: 1 }}>
+                    <Search
+                      size={16}
+                      style={{
+                        position: 'absolute',
+                        left: '12px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        color: 'var(--text-muted)',
+                        pointerEvents: 'none',
+                      }}
+                    />
+                    <input
+                      type="text"
+                      className="input-field"
+                      placeholder="Select user or type username/ID..."
+                      value={searchQuery}
+                      onFocus={() => setIsDropdownOpen(true)}
+                      onChange={(e) => {
+                        setSearchQuery(e.target.value);
+                        setSelectedUserId(e.target.value);
+                        setIsDropdownOpen(true);
+                      }}
+                      style={{ paddingLeft: '36px' }}
+                    />
+                  </div>
+                  <button type="submit" className="btn btn-primary btn-sm" disabled={!selectedUserId.trim()}>
+                    Send
+                  </button>
+                </div>
+
+                {isDropdownOpen && (
+                  <ul
+                    className="custom-dropdown-list"
+                    style={{
+                      position: 'absolute',
+                      top: '100%',
+                      left: 0,
+                      right: 0,
+                      zIndex: 20,
+                      maxHeight: '200px',
+                      overflowY: 'auto',
+                      background: '#ffffff',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '6px',
+                      boxShadow: '0 8px 16px rgba(0,0,0,0.12)',
+                      listStyle: 'none',
+                      margin: '4px 0 0 0',
+                      padding: 0,
+                    }}
+                  >
+                    {filteredUsers.length === 0 ? (
+                      <li style={{ padding: '10px 12px', fontSize: '0.85rem', color: 'var(--text-muted)', textAlign: 'center' }}>
+                        No matching users found
+                      </li>
+                    ) : (
+                      filteredUsers.map((u) => (
+                        <li
+                          key={u.userId}
+                          onClick={() => handleSelectUser(u)}
+                          style={{
+                            padding: '10px 14px',
+                            cursor: 'pointer',
+                            fontSize: '0.85rem',
+                            borderBottom: '1px solid #f1f5f9',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.background = '#f8fafc')}
+                          onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                        >
+                          <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>{u.username}</span>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>ID: {u.userId}</span>
+                        </li>
+                      ))
+                    )}
+                  </ul>
+                )}
               </div>
             </form>
           </div>

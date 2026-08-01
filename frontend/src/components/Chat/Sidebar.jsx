@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MessageSquare, Users, Search, PlusCircle } from 'lucide-react';
+import { MessageSquare, Users, Search, PlusCircle, UserMinus } from 'lucide-react';
 
 export default function Sidebar({
   conversations,
@@ -9,6 +9,7 @@ export default function Sidebar({
   onSelectConvo,
   onSelectFriend,
   onStartChat,
+  onRemoveFriend,
 }) {
   const [activeTab, setActiveTab] = useState('chats'); // 'chats' | 'friends'
   const [searchTerm, setSearchTerm] = useState('');
@@ -92,16 +93,31 @@ export default function Sidebar({
                 </div>
                 <div className="item-sub">User ID: {f.userId}</div>
               </div>
-              <button
-                className="btn btn-outline btn-xs"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onStartChat(f);
-                }}
-                title="Start Chat"
-              >
-                <PlusCircle size={14} /> Chat
-              </button>
+              <div style={{ display: 'flex', gap: '4px' }}>
+                <button
+                  className="btn btn-outline btn-xs"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onStartChat(f);
+                  }}
+                  title="Start Chat"
+                >
+                  <PlusCircle size={14} /> Chat
+                </button>
+                {onRemoveFriend && (
+                  <button
+                    className="btn btn-outline btn-xs"
+                    style={{ color: 'var(--danger-color)', borderColor: '#fecaca' }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRemoveFriend(f.userId);
+                    }}
+                    title="Remove Friend"
+                  >
+                    <UserMinus size={14} />
+                  </button>
+                )}
+              </div>
             </div>
           ))
         )}
