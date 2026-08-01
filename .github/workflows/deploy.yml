@@ -13,10 +13,15 @@ jobs:
     # Enables the GitHub Deployments tab for production tracking
     environment:
       name: production
-      url: http://${{ secrets.EC2_HOST }}:8080
+      url: ${{ steps.set-url.outputs.app_url }}
 
     steps:
-      # 1. Checkout repository code
+      # 1. Set Environment URL dynamically from secrets
+      - name: Set Environment URL
+        id: set-url
+        run: echo "app_url=https://${{ secrets.EC2_HOST }}" >> $GITHUB_OUTPUT
+
+      # 2. Checkout repository code
       - name: Checkout Code
         uses: actions/checkout@v4
 
