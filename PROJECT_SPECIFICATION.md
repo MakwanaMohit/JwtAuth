@@ -221,17 +221,43 @@ Intercepts exceptions across all `@RestController` components:
 
 ---
 
-## 7. Configuration Reference (`application.properties`)
+## 7. Environment Configuration Reference & Deployment Setup
 
-```properties
-spring.application.name=JwtAuth
-spring.data.mongodb.host=localhost
-spring.data.mongodb.port=27017
-spring.data.mongodb.database=jwtauth
-spring.data.mongodb.auto-index-creation=true
-logging.level.org.springframework.security=DEBUG
-jwt.secretkey=0943j8ft78rirfiumctu483oarei0r$^GUGT^&&FR$R&UHI(Y^*(YT*(HU*Y^$$#E#kceric93urcyn4qm94cmrifjed
+### A. `.env` File Schema
+System settings, secrets, and origins are externalized into `.env` (excluded from git) and `.env.example` (template):
+
+```env
+SERVER_PORT=8080
+APP_NAME=JwtAuth
+MONGODB_HOST=localhost
+MONGODB_PORT=27017
+MONGODB_DATABASE=jwtauth
+MONGODB_USERNAME=
+MONGODB_PASSWORD=
+JWT_SECRET=0943j8ft78rirfiumctu483oarei0r$^GUGT^&&FR$R&UHI(Y^*(YT*(HU*Y^$$#E#kceric93urcyn4qm94cmrifjed
+CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173
 ```
+
+### B. Spring `application.properties` Placeholders
+```properties
+server.port=${SERVER_PORT:8080}
+spring.application.name=${APP_NAME:JwtAuth}
+
+spring.data.mongodb.host=${MONGODB_HOST:localhost}
+spring.data.mongodb.port=${MONGODB_PORT:27017}
+spring.data.mongodb.database=${MONGODB_DATABASE:jwtauth}
+spring.data.mongodb.username=${MONGODB_USERNAME:}
+spring.data.mongodb.password=${MONGODB_PASSWORD:}
+spring.data.mongodb.auto-index-creation=true
+
+logging.level.org.springframework.security=DEBUG
+jwt.secretkey=${JWT_SECRET}
+cors.allowed-origins=${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}
+```
+
+### C. Dotenv Initialization
+- `JwtauthApplication.java` invokes `Dotenv.configure().ignoreIfMissing().load()` on startup to populate Java System properties from `.env` during local execution and Maven test runs (`./mvnw test`).
+- Production deployments can override these variables via standard environment variables or container configuration (Docker / Kubernetes / Cloud).
 
 ---
 
