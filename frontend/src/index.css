@@ -222,10 +222,22 @@ body {
   border: 1px solid #fecaca;
 }
 
+[data-theme="dark"] .alert-error {
+  background: #451a1a;
+  color: #fca5a5;
+  border-color: #7f1d1d;
+}
+
 .alert-success {
   background: #d1fae5;
   color: #065f46;
   border: 1px solid #a7f3d0;
+}
+
+[data-theme="dark"] .alert-success {
+  background: #064e3b;
+  color: #6ee7b7;
+  border-color: #047857;
 }
 
 /* Modal Windows */
@@ -384,11 +396,11 @@ body {
 }
 
 .sidebar-item:hover {
-  background: #e2e8f0;
+  background: var(--border-color);
 }
 
 .sidebar-item.selected {
-  background: #ffffff;
+  background: var(--bg-card);
   border-left: 3px solid var(--primary-color);
 }
 
@@ -396,7 +408,7 @@ body {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: #cbd5e1;
+  background: var(--border-color);
   color: var(--text-main);
   display: flex;
   align-items: center;
@@ -452,7 +464,7 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: #ffffff;
+  background: var(--bg-app);
 }
 
 .empty-thread {

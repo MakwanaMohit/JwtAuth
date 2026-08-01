@@ -93,15 +93,17 @@ public class MfaService {
             response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
         }
 
-        return new LoginResponse(token, user.getId(), TOKEN_LOGIN);
+        return new LoginResponse(token, user.getId(), TOKEN_LOGIN, true);
     }
 
     public void disable(String username, String code) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (!codeVerifier.isValidCode(user.getMfaSecret(), code)) {
-            throw new IllegalArgumentException("Invalid TOTP code");
+        if (code != null && !code.isBlank()) {
+            if (!codeVerifier.isValidCode(user.getMfaSecret(), code)) {
+                throw new IllegalArgumentException("Invalid TOTP code");
+            }
         }
 
         user.setMfaEnabled(false);

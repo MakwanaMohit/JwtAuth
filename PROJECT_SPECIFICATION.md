@@ -229,11 +229,7 @@ System settings, secrets, and origins are externalized into `.env` (excluded fro
 ```env
 SERVER_PORT=8080
 APP_NAME=JwtAuth
-MONGODB_HOST=localhost
-MONGODB_PORT=27017
-MONGODB_DATABASE=jwtauth
-MONGODB_USERNAME=
-MONGODB_PASSWORD=
+MONGODB_URI=mongodb://localhost:27017/jwtauth
 JWT_SECRET=0943j8ft78rirfiumctu483oarei0r$^GUGT^&&FR$R&UHI(Y^*(YT*(HU*Y^$$#E#kceric93urcyn4qm94cmrifjed
 CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173
 ```
@@ -243,11 +239,7 @@ CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000,http://127.0.0.
 server.port=${SERVER_PORT:8080}
 spring.application.name=${APP_NAME:JwtAuth}
 
-spring.data.mongodb.host=${MONGODB_HOST:localhost}
-spring.data.mongodb.port=${MONGODB_PORT:27017}
-spring.data.mongodb.database=${MONGODB_DATABASE:jwtauth}
-spring.data.mongodb.username=${MONGODB_USERNAME:}
-spring.data.mongodb.password=${MONGODB_PASSWORD:}
+spring.data.mongodb.uri=${MONGODB_URI:mongodb://localhost:27017/jwtauth}
 spring.data.mongodb.auto-index-creation=true
 
 logging.level.org.springframework.security=DEBUG

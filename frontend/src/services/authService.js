@@ -32,7 +32,8 @@ export const authService = {
   },
 
   async mfaDisable(code) {
-    const response = await api.post('/mfa/disable', { code });
+    const body = code ? { code } : {};
+    const response = await api.post('/mfa/disable', body);
     return response.data;
   },
 };

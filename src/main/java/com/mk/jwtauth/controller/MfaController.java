@@ -57,9 +57,10 @@ public class MfaController {
     @PostMapping("/disable")
     public ResponseEntity<MessageResponse> disable(
             Authentication auth,
-            @RequestBody MfaCodeRequest request) {
+            @RequestBody(required = false) MfaCodeRequest request) {
 
-        mfaService.disable(auth.getName(), request.getCode());
+        String code = (request != null) ? request.getCode() : null;
+        mfaService.disable(auth.getName(), code);
 
         return ResponseEntity.ok(
                 new MessageResponse("MFA disabled successfully")

@@ -55,7 +55,7 @@ public class AuthService {
                 setRefreshTokenCookie(response, refreshToken);
             }
         }
-        return new LoginResponse(token, user.getId(), t);
+        return new LoginResponse(token, user.getId(), t, Boolean.TRUE.equals(user.getMfaEnabled()));
     }
 
     public LoginResponse refresh(String refreshToken) {
@@ -72,7 +72,7 @@ public class AuthService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         String newAccessToken = jwtUtilis.getToken(user, TOKEN_LOGIN);
-        return new LoginResponse(newAccessToken, user.getId(), TOKEN_LOGIN);
+        return new LoginResponse(newAccessToken, user.getId(), TOKEN_LOGIN, Boolean.TRUE.equals(user.getMfaEnabled()));
     }
 
     public void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {

@@ -6,8 +6,10 @@ import MessageThread from './components/Chat/MessageThread';
 import { authService } from './services/authService';
 import { friendService } from './services/friendService';
 import { messageService } from './services/messageService';
+import { useTheme } from './hooks/useTheme';
 
 export default function App() {
+  useTheme();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
   const [initLoading, setInitLoading] = useState(true);
@@ -39,7 +41,7 @@ export default function App() {
       const res = await authService.refresh();
       if (res && res.token) {
         localStorage.setItem('accessToken', res.token);
-        setUser({ userId: res.userid, username: '' });
+        setUser({ userId: res.userid, username: '', mfaEnabled: !!res.mfaEnabled });
         setIsAuthenticated(true);
         loadAppData(res.userid);
       } else {
@@ -75,7 +77,7 @@ export default function App() {
   };
 
   const handleLoginSuccess = (authResponse) => {
-    setUser({ userId: authResponse.userid, username: '' });
+    setUser({ userId: authResponse.userid, username: '', mfaEnabled: !!authResponse.mfaEnabled });
     setIsAuthenticated(true);
     loadAppData(authResponse.userid);
   };
@@ -175,6 +177,7 @@ export default function App() {
         user={user}
         onLogout={handleLogout}
         onRefreshFriends={() => loadAppData(user?.userId)}
+        onMfaStatusChange={(enabled) => setUser((u) => ({ ...u, mfaEnabled: enabled }))}
       />
 
       <div className="app-main-body">

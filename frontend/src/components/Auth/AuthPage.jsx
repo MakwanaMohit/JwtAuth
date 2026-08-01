@@ -1,8 +1,19 @@
 import React, { useState } from 'react';
+import { Sun, Moon, SunMoon } from 'lucide-react';
 import { authService } from '../../services/authService';
+import { useTheme } from '../../hooks/useTheme';
 import MfaModal from './MfaModal';
 
+const THEME_ICONS = {
+  light: { Icon: Sun, label: 'Light mode — click for Dark' },
+  dark: { Icon: Moon, label: 'Dark mode — click for System' },
+  system: { Icon: SunMoon, label: 'System mode — click for Light' },
+};
+
 export default function AuthPage({ onLoginSuccess }) {
+  const { theme, cycleTheme } = useTheme();
+  const { Icon: ThemeIcon, label: themeLabel } = THEME_ICONS[theme] ?? THEME_ICONS.system;
+
   const [isLogin, setIsLogin] = useState(true);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -64,7 +75,18 @@ export default function AuthPage({ onLoginSuccess }) {
         />
       )}
 
-      <div className="auth-card">
+      <div className="auth-card" style={{ position: 'relative' }}>
+        <button
+          type="button"
+          className="icon-btn theme-toggle-btn"
+          onClick={cycleTheme}
+          title={themeLabel}
+          aria-label={themeLabel}
+          style={{ position: 'absolute', top: '16px', right: '16px' }}
+        >
+          <ThemeIcon size={20} />
+        </button>
+
         <div className="auth-header">
           <h2>JwtAuth Messenger</h2>
           <p>Secure Spring Boot Chat Application</p>
