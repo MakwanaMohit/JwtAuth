@@ -10,7 +10,7 @@ const api = axios.create({
 });
 
 // Request Interceptor: Attach Bearer Access Token (skip for auth endpoints)
-const AUTH_SKIP_URLS = ['/auth/login', '/auth/signup', '/auth/refresh', '/mfa/verify'];
+const AUTH_SKIP_URLS = ['/auth/login', '/auth/signup', '/auth/refresh'];
 
 api.interceptors.request.use(
   (config) => {
@@ -46,11 +46,12 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Skip refresh loop for login/signup/refresh endpoints
+    // Skip refresh loop for login/signup/refresh/mfa-verify endpoints
     const isAuthEndpoint =
       originalRequest.url?.includes("/auth/login") ||
       originalRequest.url?.includes("/auth/signup") ||
-      originalRequest.url?.includes("/auth/refresh");
+      originalRequest.url?.includes("/auth/refresh") ||
+      originalRequest.url?.includes("/mfa/verify");
 
     const status = error.response?.status;
     const isUnauthorized = status === 401 || status === 403;
