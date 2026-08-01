@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpServletResponse;
+
 @RestController
 @RequestMapping("/mfa")
 @RequiredArgsConstructor
@@ -18,7 +20,6 @@ public class MfaController {
 
     private final MfaService mfaService;
 
-    // ✅ Setup
     @PostMapping("/setup")
     public ResponseEntity<MfaSetupResponse> setup(Authentication auth) {
 
@@ -29,7 +30,6 @@ public class MfaController {
                 .body(new MfaSetupResponse(uri));
     }
 
-    // ✅ Enable
     @PostMapping("/enable")
     public ResponseEntity<MessageResponse> enable(
             Authentication auth,
@@ -42,19 +42,18 @@ public class MfaController {
         );
     }
 
-    // ✅ Verify
     @PostMapping("/verify")
     public ResponseEntity<LoginResponse> verify(
             Authentication auth,
-            @RequestBody MfaCodeRequest request) {
+            @RequestBody MfaCodeRequest request,
+            HttpServletResponse response) {
 
-        LoginResponse response =
-                mfaService.verify(auth.getName(), request.getCode());
+        LoginResponse resp =
+                mfaService.verify(auth.getName(), request.getCode(), response);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(resp);
     }
 
-    // ✅ Disable
     @PostMapping("/disable")
     public ResponseEntity<MessageResponse> disable(
             Authentication auth,

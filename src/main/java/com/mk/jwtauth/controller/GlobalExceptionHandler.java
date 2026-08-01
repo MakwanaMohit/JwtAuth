@@ -80,4 +80,14 @@ public class GlobalExceptionHandler {
                         .build()
         );
     }
+
+    @ExceptionHandler(io.jsonwebtoken.JwtException.class)
+    public ResponseEntity<ApiResponse<Object>> handleJwtException(io.jsonwebtoken.JwtException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                ApiResponse.builder()
+                        .success(false)
+                        .message("Invalid or expired token: " + ex.getMessage())
+                        .build()
+        );
+    }
 }

@@ -12,6 +12,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import static com.mk.jwtauth.service.TokenType.TOKEN_LOGIN;
 
 @Service
@@ -61,6 +64,10 @@ public class MfaService {
     }
 
     public LoginResponse verify(String username, String code) {
+        return verify(username, code, null);
+    }
+
+    public LoginResponse verify(String username, String code, HttpServletResponse response) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -73,6 +80,18 @@ public class MfaService {
         }
 
         String token = jwtUtilis.getToken(user, TOKEN_LOGIN);
+
+        if (response != null) {
+            String refreshToken = jwtUtilis.getToken(user, TokenType.TOKEN_REFRESH);
+            ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
+                    .httpOnly(true)
+                    .secure(false)
+                    .path("/")
+                    .maxAge(7 * 24 * 60 * 60)
+                    .sameSite("Lax")
+                    .build();
+            response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        }
 
         return new LoginResponse(token, user.getId(), TOKEN_LOGIN);
     }

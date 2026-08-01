@@ -45,9 +45,14 @@ public class JWTUtilis {
         claims.put("authorities", roles);
 
         long now = System.currentTimeMillis();
-        long expiration = (type == TOKEN_TEMPORARY)
-                ? now + (5 * 60 * 1000)   // TEMP token → 5 min
-                : now + (15 * 60 * 1000); // LOGIN token → 15 min
+        long expiration;
+        if (type == TOKEN_TEMPORARY) {
+            expiration = now + (5 * 60 * 1000);        // TEMP token → 5 min
+        } else if (type == TokenType.TOKEN_REFRESH) {
+            expiration = now + (7L * 24 * 60 * 60 * 1000); // REFRESH token → 7 days
+        } else {
+            expiration = now + (15 * 60 * 1000);       // LOGIN token → 15 min
+        }
 
         return Jwts.builder()
                 .subject(user.getUsername())
