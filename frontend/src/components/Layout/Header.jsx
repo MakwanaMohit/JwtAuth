@@ -1,11 +1,21 @@
 import React, { useState } from 'react';
-import { UserCheck, Shield, LogOut, Users } from 'lucide-react';
+import { UserCheck, Shield, LogOut, Users, Sun, Moon, SunMoon } from 'lucide-react';
 import RequestDrawer from './RequestDrawer';
 import TotpSetupModal from './TotpSetupModal';
+import { useTheme } from '../../hooks/useTheme';
+
+const THEME_ICONS = {
+  light: { Icon: Sun,     label: 'Light mode — click for Dark' },
+  dark:  { Icon: Moon,    label: 'Dark mode — click for System' },
+  system:{ Icon: SunMoon, label: 'System mode — click for Light' },
+};
 
 export default function Header({ user, onLogout, onRefreshFriends }) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isMfaModalOpen, setIsMfaModalOpen] = useState(false);
+  const { theme, cycleTheme } = useTheme();
+
+  const { Icon, label } = THEME_ICONS[theme] ?? THEME_ICONS.system;
 
   return (
     <header className="app-header">
@@ -17,6 +27,16 @@ export default function Header({ user, onLogout, onRefreshFriends }) {
         <div className="user-badge">
           <span className="user-name">{user?.username || 'User'}</span>
         </div>
+
+        {/* Theme Toggle */}
+        <button
+          className="icon-btn theme-toggle-btn"
+          onClick={cycleTheme}
+          title={label}
+          aria-label={label}
+        >
+          <Icon size={20} />
+        </button>
 
         <button
           className="btn btn-outline btn-sm"
@@ -54,3 +74,4 @@ export default function Header({ user, onLogout, onRefreshFriends }) {
     </header>
   );
 }
+

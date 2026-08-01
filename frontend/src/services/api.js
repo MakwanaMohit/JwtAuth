@@ -1,6 +1,5 @@
-import axios from 'axios';
-
-const API_BASE_URL = 'http://localhost:8080';
+import axios from "axios";
+import { API_BASE_URL } from "../config";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -10,16 +9,21 @@ const api = axios.create({
   },
 });
 
-// Request Interceptor: Attach Bearer Access Token
+// Request Interceptor: Attach Bearer Access Token (skip for auth endpoints)
+const AUTH_SKIP_URLS = ['/auth/login', '/auth/signup', '/auth/refresh', '/mfa/verify'];
+
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('accessToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    const isAuthUrl = AUTH_SKIP_URLS.some((path) => config.url?.includes(path));
+    if (!isAuthUrl) {
+      const token = localStorage.getItem('accessToken');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // Response Interceptor: Auto-Refresh on 401 Unauthorized
@@ -43,11 +47,16 @@ api.interceptors.response.use(
     const originalRequest = error.config;
 
     // Skip refresh loop for login/signup/refresh endpoints
-    const isAuthEndpoint = originalRequest.url?.includes('/auth/login') ||
-      originalRequest.url?.includes('/auth/signup') ||
-      originalRequest.url?.includes('/auth/refresh');
+    const isAuthEndpoint =
+      originalRequest.url?.includes("/auth/login") ||
+      originalRequest.url?.includes("/auth/signup") ||
+      originalRequest.url?.includes("/auth/refresh");
 
-    if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !isAuthEndpoint
+    ) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
@@ -66,23 +75,23 @@ api.interceptors.response.use(
         const refreshResponse = await axios.post(
           `${API_BASE_URL}/auth/refresh`,
           {},
-          { withCredentials: true }
+          { withCredentials: true },
         );
 
         const newAccessToken = refreshResponse.data?.token;
         if (newAccessToken) {
-          localStorage.setItem('accessToken', newAccessToken);
+          localStorage.setItem("accessToken", newAccessToken);
           api.defaults.headers.common.Authorization = `Bearer ${newAccessToken}`;
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
           processQueue(null, newAccessToken);
           return api(originalRequest);
         } else {
-          throw new Error('Refresh token did not yield access token');
+          throw new Error("Refresh token did not yield access token");
         }
       } catch (refreshErr) {
         processQueue(refreshErr, null);
-        localStorage.removeItem('accessToken');
-        window.dispatchEvent(new Event('auth:logout'));
+        localStorage.removeItem("accessToken");
+        window.dispatchEvent(new Event("auth:logout"));
         return Promise.reject(refreshErr);
       } finally {
         isRefreshing = false;
@@ -90,7 +99,7 @@ api.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

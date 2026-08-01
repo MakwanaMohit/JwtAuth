@@ -13,6 +13,20 @@
   --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
+/* Dark Mode Variables */
+[data-theme="dark"] {
+  --bg-app: #0f172a;
+  --bg-card: #1e293b;
+  --bg-sidebar: #1a2235;
+  --border-color: #334155;
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
+  --primary-color: #3b82f6;
+  --primary-hover: #2563eb;
+  --danger-color: #f87171;
+  --success-color: #34d399;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -25,6 +39,7 @@ body {
   color: var(--text-main);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 /* Initialization & Full Page Screens */
@@ -44,7 +59,7 @@ body {
   align-items: center;
   min-height: 100vh;
   padding: 20px;
-  background: #f1f5f9;
+  background: var(--bg-sidebar);
 }
 
 .auth-card {
@@ -117,8 +132,9 @@ body {
   font-size: 0.95rem;
   font-family: inherit;
   outline: none;
-  background: #ffffff;
-  transition: border-color 0.15s ease;
+  background: var(--bg-card);
+  color: var(--text-main);
+  transition: border-color 0.15s ease, background-color 0.25s ease;
 }
 
 .input-field:focus {
@@ -149,12 +165,13 @@ body {
 }
 
 .btn-secondary {
-  background: #e2e8f0;
+  background: var(--border-color);
   color: var(--text-main);
 }
 
 .btn-secondary:hover {
-  background: #cbd5e1;
+  background: var(--text-muted);
+  color: var(--bg-card);
 }
 
 .btn-outline {
@@ -164,7 +181,7 @@ body {
 }
 
 .btn-outline:hover {
-  background: #f1f5f9;
+  background: var(--bg-sidebar);
 }
 
 .btn-danger {
@@ -282,7 +299,7 @@ body {
   font-size: 0.9rem;
   font-weight: 600;
   padding: 4px 10px;
-  background: #f1f5f9;
+  background: var(--bg-sidebar);
   border-radius: 20px;
   color: var(--text-main);
 }
@@ -521,7 +538,7 @@ body {
 }
 
 .incoming .message-bubble {
-  background: #ffffff;
+  background: var(--bg-card);
   color: var(--text-main);
   border: 1px solid var(--border-color);
   border-bottom-left-radius: 2px;
@@ -675,3 +692,20 @@ body {
   cursor: pointer;
   color: var(--text-muted);
 }
+
+.theme-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  color: var(--text-main);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.theme-toggle-btn:hover {
+  background: var(--bg-sidebar);
+  color: var(--primary-color);
+}
+
