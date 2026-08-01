@@ -63,8 +63,10 @@ export default function TotpSetupModal({ onClose, onMfaEnabled }) {
         ) : (
           <div className="totp-setup-content">
             {uri && (
-              <div className="qr-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '16px 0', padding: '16px', background: '#ffffff', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                <QRCodeSVG value={uri} size={180} level="M" includeMargin={true} />
+              <div className="qr-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '16px 0', padding: '16px', background: 'var(--bg-sidebar)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                <div style={{ padding: '12px', background: '#ffffff', borderRadius: '6px' }}>
+                  <QRCodeSVG value={uri} size={180} level="M" includeMargin={true} />
+                </div>
                 <button
                   type="button"
                   className="btn btn-outline btn-xs"

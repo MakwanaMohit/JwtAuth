@@ -41,7 +41,7 @@ export default function App() {
       const res = await authService.refresh();
       if (res && res.token) {
         localStorage.setItem('accessToken', res.token);
-        setUser({ userId: res.userid, username: '', mfaEnabled: !!res.mfaEnabled });
+        setUser({ userId: res.userid, username: res.username || '', mfaEnabled: !!res.mfaEnabled });
         setIsAuthenticated(true);
         loadAppData(res.userid);
       } else {
@@ -68,7 +68,7 @@ export default function App() {
       if (convos.length > 0 && currentUserId) {
         const myConvo = convos.find((c) => c.userId === currentUserId);
         if (myConvo) {
-          setUser((u) => ({ ...u, username: myConvo.username }));
+          setUser((u) => ({ ...u, username: u?.username || myConvo.username }));
         }
       }
     } catch (err) {
@@ -77,7 +77,7 @@ export default function App() {
   };
 
   const handleLoginSuccess = (authResponse) => {
-    setUser({ userId: authResponse.userid, username: '', mfaEnabled: !!authResponse.mfaEnabled });
+    setUser({ userId: authResponse.userid, username: authResponse.username || '', mfaEnabled: !!authResponse.mfaEnabled });
     setIsAuthenticated(true);
     loadAppData(authResponse.userid);
   };

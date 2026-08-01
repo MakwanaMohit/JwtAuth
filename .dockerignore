@@ -1,0 +1,12 @@
+.git
+.gitignore
+.idea
+.env
+.env.local
+target
+frontend/node_modules
+frontend/dist
+*.md
+LICENSE
+send_message.py
+showqr.py

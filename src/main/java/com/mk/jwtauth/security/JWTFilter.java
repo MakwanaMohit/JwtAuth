@@ -27,25 +27,26 @@ public class JWTFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         final String requestTokenHeader = request.getHeader("Authorization");
-        if (requestTokenHeader == null || !requestTokenHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request,response);
-            return;
-        }
-        String token = requestTokenHeader.replace("Bearer ", "");
-        TokenData data = jwtUtilis.getTokenData(token);
-        String username = data.getUsername();
+        if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
+            String token = requestTokenHeader.replace("Bearer ", "");
+            try {
+                TokenData data = jwtUtilis.getTokenData(token);
+                if (data != null && data.getUsername() != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    JwtAuthenticationToken auth =
+                            new JwtAuthenticationToken(
+                                    data.getUsername(),
+                                    null,
+                                    data.getAuthorities(),
+                                    data.getTokenType()
+                            );
 
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            JwtAuthenticationToken auth =
-                    new JwtAuthenticationToken(
-                            data.getUsername(),
-                            null,
-                            data.getAuthorities(),
-                            data.getTokenType()
-                    );
-
-            SecurityContextHolder.getContext().setAuthentication(auth);
+                    SecurityContextHolder.getContext().setAuthentication(auth);
+                }
+            } catch (Exception e) {
+                log.warn("JWT token validation failed or expired: {}", e.getMessage());
+                SecurityContextHolder.clearContext();
+            }
         }
-        filterChain.doFilter(request,response);
+        filterChain.doFilter(request, response);
     }
 }

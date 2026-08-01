@@ -44,7 +44,8 @@ public class AuthController {
     @RequestMapping(value = "/refresh", method = {RequestMethod.GET, RequestMethod.POST})
     public ResponseEntity<LoginResponse> refresh(
             @CookieValue(name = "refreshToken", required = false) String refreshTokenCookie,
-            HttpServletRequest request) {
+            HttpServletRequest request,
+            HttpServletResponse response) {
 
         String token = refreshTokenCookie;
         if (token == null || token.isBlank()) {
@@ -58,6 +59,6 @@ public class AuthController {
             }
         }
 
-        return ResponseEntity.ok(authService.refresh(token));
+        return ResponseEntity.ok(authService.refresh(token, response));
     }
 }

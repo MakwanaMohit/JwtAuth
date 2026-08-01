@@ -176,7 +176,7 @@ export default function RequestDrawer({ isOpen, onClose, onRefreshFriends }) {
                       zIndex: 20,
                       maxHeight: '200px',
                       overflowY: 'auto',
-                      background: '#ffffff',
+                      background: 'var(--bg-card)',
                       border: '1px solid var(--border-color)',
                       borderRadius: '6px',
                       boxShadow: '0 8px 16px rgba(0,0,0,0.12)',
@@ -198,12 +198,12 @@ export default function RequestDrawer({ isOpen, onClose, onRefreshFriends }) {
                             padding: '10px 14px',
                             cursor: 'pointer',
                             fontSize: '0.85rem',
-                            borderBottom: '1px solid #f1f5f9',
+                            borderBottom: '1px solid var(--border-color)',
                             display: 'flex',
                             justifyContent: 'space-between',
                             alignItems: 'center',
                           }}
-                          onMouseEnter={(e) => (e.currentTarget.style.background = '#f8fafc')}
+                          onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-sidebar)')}
                           onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                         >
                           <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>{u.username}</span>

@@ -55,24 +55,44 @@ public class AuthService {
                 setRefreshTokenCookie(response, refreshToken);
             }
         }
-        return new LoginResponse(token, user.getId(), t, Boolean.TRUE.equals(user.getMfaEnabled()));
+        return new LoginResponse(token, user.getId(), user.getUsername(), t, Boolean.TRUE.equals(user.getMfaEnabled()));
     }
 
     public LoginResponse refresh(String refreshToken) {
+        return refresh(refreshToken, null);
+    }
+
+    public LoginResponse refresh(String refreshToken, HttpServletResponse response) {
         if (refreshToken == null || refreshToken.trim().isEmpty()) {
-            throw new IllegalArgumentException("Refresh token is missing");
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.UNAUTHORIZED, "Refresh token is missing");
         }
 
-        TokenData tokenData = jwtUtilis.getTokenData(refreshToken);
+        TokenData tokenData;
+        try {
+            tokenData = jwtUtilis.getTokenData(refreshToken);
+        } catch (Exception e) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.UNAUTHORIZED, "Refresh token expired or invalid");
+        }
+
         if (tokenData.getTokenType() != TokenType.TOKEN_REFRESH) {
-            throw new IllegalArgumentException("Invalid refresh token type");
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.UNAUTHORIZED, "Invalid refresh token type");
         }
 
         User user = userRepository.findByUsername(tokenData.getUsername())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.UNAUTHORIZED, "User not found"));
 
         String newAccessToken = jwtUtilis.getToken(user, TOKEN_LOGIN);
-        return new LoginResponse(newAccessToken, user.getId(), TOKEN_LOGIN, Boolean.TRUE.equals(user.getMfaEnabled()));
+
+        if (response != null) {
+            String newRefreshToken = jwtUtilis.getToken(user, TokenType.TOKEN_REFRESH);
+            setRefreshTokenCookie(response, newRefreshToken);
+        }
+
+        return new LoginResponse(newAccessToken, user.getId(), user.getUsername(), TOKEN_LOGIN, Boolean.TRUE.equals(user.getMfaEnabled()));
     }
 
     public void setRefreshTokenCookie(HttpServletResponse response, String refreshToken) {

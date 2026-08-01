@@ -51,7 +51,7 @@ public class JWTUtilis {
         } else if (type == TokenType.TOKEN_REFRESH) {
             expiration = now + (7L * 24 * 60 * 60 * 1000); // REFRESH token → 7 days
         } else {
-            expiration = now + (15 * 60 * 1000);       // LOGIN token → 15 min
+            expiration = now + ( 30 * 1000);       // LOGIN token → 15 min
         }
 
         return Jwts.builder()

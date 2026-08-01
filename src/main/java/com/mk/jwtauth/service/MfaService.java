@@ -93,7 +93,7 @@ public class MfaService {
             response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
         }
 
-        return new LoginResponse(token, user.getId(), TOKEN_LOGIN, true);
+        return new LoginResponse(token, user.getId(), user.getUsername(), TOKEN_LOGIN, true);
     }
 
     public void disable(String username, String code) {

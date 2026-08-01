@@ -52,8 +52,11 @@ api.interceptors.response.use(
       originalRequest.url?.includes("/auth/signup") ||
       originalRequest.url?.includes("/auth/refresh");
 
+    const status = error.response?.status;
+    const isUnauthorized = status === 401 || status === 403;
+
     if (
-      error.response?.status === 401 &&
+      isUnauthorized &&
       !originalRequest._retry &&
       !isAuthEndpoint
     ) {
