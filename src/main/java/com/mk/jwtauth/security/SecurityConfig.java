@@ -76,7 +76,7 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
 
-                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/auth/login", "/auth/signup", "/auth/refresh", "/auth/logout").permitAll()
 
                         .requestMatchers("/mfa/verify")
                         .access(TokenAccess(TOKEN_TEMPORARY))

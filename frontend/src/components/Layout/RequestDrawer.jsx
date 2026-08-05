@@ -103,8 +103,6 @@ export default function RequestDrawer({ isOpen, onClose, onRefreshFriends }) {
     }
   };
 
-  if (!isOpen) return null;
-
   // Filter users based on searchQuery
   const filteredUsers = searchQuery.trim()
     ? allUsers.filter(
@@ -115,7 +113,7 @@ export default function RequestDrawer({ isOpen, onClose, onRefreshFriends }) {
     : allUsers;
 
   return (
-    <div className="drawer-overlay" onClick={onClose}>
+    <div className="drawer-overlay" style={{ display: isOpen ? 'flex' : 'none' }} onClick={onClose}>
       <div className="drawer-panel" onClick={(e) => e.stopPropagation()}>
         <div className="drawer-header">
           <h3>Friend Requests</h3>

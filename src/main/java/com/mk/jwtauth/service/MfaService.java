@@ -86,7 +86,7 @@ public class MfaService {
             ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
                     .httpOnly(true)
                     .secure(false)
-                    .path("/")
+                    .path("/auth")
                     .maxAge(7 * 24 * 60 * 60)
                     .sameSite("Lax")
                     .build();

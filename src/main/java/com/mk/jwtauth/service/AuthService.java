@@ -22,6 +22,11 @@ import com.mk.jwtauth.dto.TokenData;
 import static com.mk.jwtauth.service.TokenType.TOKEN_LOGIN;
 import static com.mk.jwtauth.service.TokenType.TOKEN_TEMPORARY;
 
+import dev.samstevens.totp.code.CodeVerifier;
+import com.mk.jwtauth.dto.ChangePasswordRequest;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -30,6 +35,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CodeVerifier codeVerifier;
 
     public LoginResponse login(@NonNull LoginRequest loginRequest) {
         return login(loginRequest, null);
@@ -99,8 +105,19 @@ public class AuthService {
         ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
                 .secure(false)
-                .path("/")
+                .path("/auth")
                 .maxAge(7 * 24 * 60 * 60)
+                .sameSite("Lax")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+    }
+
+    public void clearRefreshTokenCookie(HttpServletResponse response) {
+        ResponseCookie cookie = ResponseCookie.from("refreshToken", "")
+                .httpOnly(true)
+                .secure(false)
+                .path("/auth")
+                .maxAge(0)
                 .sameSite("Lax")
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
@@ -111,5 +128,66 @@ public class AuthService {
         if (user != null) throw new IllegalArgumentException("Username is already in use");
         user = userRepository.save(new User(signupRequest.getUsername(),passwordEncoder.encode(signupRequest.getPassword()), signupRequest.getEmail()));
         return new SignupResponse(user.getId(),user.getUsername());
+    }
+
+    public LoginResponse changePassword(String username, String refreshToken, ChangePasswordRequest request, HttpServletResponse response) {
+        // 1. Verify Refresh Token First
+        if (refreshToken == null || refreshToken.trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Valid refresh token cookie required to change password");
+        }
+
+        TokenData tokenData;
+        try {
+            tokenData = jwtUtilis.getTokenData(refreshToken);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Refresh token is invalid or expired");
+        }
+
+        if (tokenData.getTokenType() != TokenType.TOKEN_REFRESH || !username.equals(tokenData.getUsername())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid refresh token for current user");
+        }
+
+        // 2. Fetch User Entity
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        if (request.getNewPassword() == null || request.getNewPassword().trim().length() < 6) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "New password must be at least 6 characters");
+        }
+
+        // 3. Verification Factor: MFA TOTP Code OR Current Password
+        boolean verified = false;
+
+        if (request.getMfaCode() != null && !request.getMfaCode().trim().isEmpty()) {
+            if (!Boolean.TRUE.equals(user.getMfaEnabled())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "2FA is not enabled on your account");
+            }
+            if (!codeVerifier.isValidCode(user.getMfaSecret(), request.getMfaCode().trim())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid 2FA TOTP code");
+            }
+            verified = true;
+        } else if (request.getCurrentPassword() != null && !request.getCurrentPassword().trim().isEmpty()) {
+            if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Current password is incorrect");
+            }
+            verified = true;
+        }
+
+        if (!verified) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Either current password or 2FA code is required to change password");
+        }
+
+        // 4. Update Password
+        user.setPassword(passwordEncoder.encode(request.getNewPassword().trim()));
+        userRepository.save(user);
+
+        // 5. Issue new access token and renew refresh token cookie
+        String newAccessToken = jwtUtilis.getToken(user, TOKEN_LOGIN);
+        if (response != null) {
+            String newRefreshToken = jwtUtilis.getToken(user, TokenType.TOKEN_REFRESH);
+            setRefreshTokenCookie(response, newRefreshToken);
+        }
+
+        return new LoginResponse(newAccessToken, user.getId(), user.getUsername(), TOKEN_LOGIN, Boolean.TRUE.equals(user.getMfaEnabled()));
     }
 }

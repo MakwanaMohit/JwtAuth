@@ -61,4 +61,33 @@ public class AuthController {
 
         return ResponseEntity.ok(authService.refresh(token, response));
     }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(HttpServletResponse response) {
+        authService.clearRefreshTokenCookie(response);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<LoginResponse> changePassword(
+            org.springframework.security.core.Authentication auth,
+            @CookieValue(name = "refreshToken", required = false) String refreshTokenCookie,
+            @RequestBody com.mk.jwtauth.dto.ChangePasswordRequest changePasswordRequest,
+            HttpServletRequest request,
+            HttpServletResponse response) {
+
+        String token = refreshTokenCookie;
+        if (token == null || token.isBlank()) {
+            if (request.getCookies() != null) {
+                for (Cookie c : request.getCookies()) {
+                    if ("refreshToken".equals(c.getName())) {
+                        token = c.getValue();
+                        break;
+                    }
+                }
+            }
+        }
+
+        return ResponseEntity.ok(authService.changePassword(auth.getName(), token, changePasswordRequest, response));
+    }
 }

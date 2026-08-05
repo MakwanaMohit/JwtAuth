@@ -36,4 +36,21 @@ export const authService = {
     const response = await api.post('/mfa/disable', body);
     return response.data;
   },
+
+  async logout() {
+    try {
+      await api.post('/auth/logout');
+    } catch (e) {
+      // ignore
+    }
+  },
+
+  async changePassword({ currentPassword, newPassword, mfaCode }) {
+    const response = await api.post('/auth/change-password', {
+      currentPassword,
+      newPassword,
+      mfaCode,
+    });
+    return response.data;
+  },
 };

@@ -582,6 +582,8 @@ body {
   border-radius: 20px;
   font-size: 0.9rem;
   outline: none;
+  background: var(--bg-card);
+  color: var(--text-main);
 }
 
 .send-btn {

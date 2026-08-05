@@ -82,7 +82,8 @@ export default function App() {
     loadAppData(authResponse.userid);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await authService.logout();
     localStorage.removeItem('accessToken');
     setIsAuthenticated(false);
     setUser(null);

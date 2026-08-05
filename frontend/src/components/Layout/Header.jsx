@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { Shield, ShieldOff, LogOut, Users, Sun, Moon, SunMoon } from 'lucide-react';
+import React, { useState, Activity } from 'react';
+import { Shield, ShieldOff, LogOut, Users, Sun, Moon, SunMoon, KeyRound } from 'lucide-react';
 import RequestDrawer from './RequestDrawer';
 import TotpSetupModal from './TotpSetupModal';
 import TotpDisableModal from './TotpDisableModal';
+import ChangePasswordModal from './ChangePasswordModal';
 import { useTheme } from '../../hooks/useTheme';
 
 const THEME_ICONS = {
@@ -12,9 +13,10 @@ const THEME_ICONS = {
 };
 
 export default function Header({ user, onLogout, onRefreshFriends, onMfaStatusChange }) {
-  const [isDrawerOpen, setIsDrawerOpen]       = useState(false);
-  const [isSetupModalOpen, setIsSetupModalOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen]         = useState(false);
+  const [isSetupModalOpen, setIsSetupModalOpen]   = useState(false);
   const [isDisableModalOpen, setIsDisableModalOpen] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const { theme, cycleTheme } = useTheme();
 
   const { Icon, label } = THEME_ICONS[theme] ?? THEME_ICONS.system;
@@ -39,6 +41,15 @@ export default function Header({ user, onLogout, onRefreshFriends, onMfaStatusCh
           aria-label={label}
         >
           <Icon size={20} />
+        </button>
+
+        {/* Change Password Button */}
+        <button
+          className="btn btn-outline btn-sm"
+          onClick={() => setIsPasswordModalOpen(true)}
+          title="Change Account Password"
+        >
+          <KeyRound size={16} /> Password
         </button>
 
         {/* 2FA Button — changes based on current state */}
@@ -73,8 +84,17 @@ export default function Header({ user, onLogout, onRefreshFriends, onMfaStatusCh
         </button>
       </div>
 
+      {/* Change Password Modal */}
+      <Activity mode={isPasswordModalOpen ? 'visible' : 'hidden'}>
+        <ChangePasswordModal
+          user={user}
+          onClose={() => setIsPasswordModalOpen(false)}
+          onPasswordChanged={() => setIsPasswordModalOpen(false)}
+        />
+      </Activity>
+
       {/* 2FA Setup Modal */}
-      {isSetupModalOpen && (
+      <Activity mode={isSetupModalOpen ? 'visible' : 'hidden'}>
         <TotpSetupModal
           onClose={() => setIsSetupModalOpen(false)}
           onMfaEnabled={() => {
@@ -82,10 +102,10 @@ export default function Header({ user, onLogout, onRefreshFriends, onMfaStatusCh
             if (onMfaStatusChange) onMfaStatusChange(true);
           }}
         />
-      )}
+      </Activity>
 
       {/* 2FA Disable Modal */}
-      {isDisableModalOpen && (
+      <Activity mode={isDisableModalOpen ? 'visible' : 'hidden'}>
         <TotpDisableModal
           username={user?.username}
           onClose={() => setIsDisableModalOpen(false)}
@@ -94,13 +114,16 @@ export default function Header({ user, onLogout, onRefreshFriends, onMfaStatusCh
             if (onMfaStatusChange) onMfaStatusChange(false);
           }}
         />
-      )}
+      </Activity>
 
-      <RequestDrawer
-        isOpen={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
-        onRefreshFriends={onRefreshFriends}
-      />
+      <Activity mode={isDrawerOpen ? 'visible' : 'hidden'}>
+        <RequestDrawer
+          isOpen={isDrawerOpen}
+          onClose={() => setIsDrawerOpen(false)}
+          onRefreshFriends={onRefreshFriends}
+        />
+      </Activity>
     </header>
   );
 }
+
