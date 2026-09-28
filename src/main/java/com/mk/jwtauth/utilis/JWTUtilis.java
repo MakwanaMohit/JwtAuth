@@ -25,6 +25,7 @@ import static com.mk.jwtauth.service.TokenType.TOKEN_TYPE_KEY;
 public class JWTUtilis {
     @Value("${jwt.secretkey}")
     private String secretkey;
+    private String t;
 
     private SecretKey getSecretKey() {
         return Keys.hmacShaKeyFor(secretkey.getBytes(StandardCharsets.UTF_8));
